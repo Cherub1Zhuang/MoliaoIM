@@ -1,0 +1,8 @@
+{
+  "HELLO": "你好",
+  "home": {
+    "chat": "聊天",
+    "contacts": "分组",
+    "group": "群聊"
+  }
+}

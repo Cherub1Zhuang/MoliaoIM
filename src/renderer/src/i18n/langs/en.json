@@ -1,0 +1,8 @@
+{
+  "HELLO": "Hello",
+  "home": {
+    "chat": "Chat",
+    "contacts": "Contacts",
+    "group": "Group Chat"
+  }
+}
