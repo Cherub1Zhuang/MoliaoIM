@@ -5,10 +5,28 @@ const routes = [
     path: '/',
     name: 'home',
     component: () => import('@renderer/views/home.vue'),
+    redirect: '/chats',
     children: [
       {
-        path: '',
-        component: () => import('@renderer/views/home/conversation.vue')
+        path: 'chats',
+        component: () => import('@renderer/views/home/chats.vue'),
+        children: [
+          {
+            path: '',
+            name: 'chats-default',
+            component: () => import('@renderer/views/home/chats/default.vue')
+          },
+          {
+            path: 'conversation/:target',
+            name: 'chats-conversation',
+            component: () => import('@renderer/views/home/chats/conversation.vue')
+          }
+        ]
+      },
+      {
+        path: 'friends',
+        name: 'friends',
+        component: () => import('@renderer/views/home/friends.vue')
       }
     ],
     meta: { requireLogin: true }

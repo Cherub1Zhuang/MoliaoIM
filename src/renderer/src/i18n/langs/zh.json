@@ -1,8 +1,15 @@
 {
-  "HELLO": "你好",
-  "home": {
-    "chat": "聊天",
-    "contacts": "分组",
-    "group": "群聊"
+  "time": {
+    "yesterday": "昨天"
+  },
+  "search": "搜索",
+  "group": "群组",
+  "send_btn": "发送",
+  "login": {
+    "welcome_back": "欢迎回来",
+    "please_login": "请登录到您的账户",
+    "mobile_placeholder": "手机号",
+    "password_placeholder": "密码",
+    "login_button": "登录"
   }
 }

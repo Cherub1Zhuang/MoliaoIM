@@ -1,4 +1,7 @@
-:root{}
-html,body{
+:root {
+}
+html,
+body {
   user-select: none;
+  background-color: #f7f7f7;
 }

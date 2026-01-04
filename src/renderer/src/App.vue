@@ -1,7 +1,10 @@
 <template>
   <router-view class="w-screen h-screen" />
+  <mmc />
 </template>
 <script setup>
+import mmc from './components/mmc.vue'
+
 import { ref, onMounted, provide } from 'vue'
 const device_id = ref('')
 const getDeviceId = () => {
@@ -9,11 +12,9 @@ const getDeviceId = () => {
     device_id.value = id
   })
 }
+
 onMounted(() => {
   getDeviceId()
-  window.electron.ipcRenderer.on('mqtt', (event, data) => {
-    console.log('Received MQTT data in App.vue:', data)
-  })
 })
 provide('device_id', device_id)
 </script>

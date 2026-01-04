@@ -7,7 +7,7 @@ const NO_TOKEN_URLS = [
 
 const instance = axios.create({
   baseURL: import.meta.env.VITE_APP_BASE_API_URL || '/api',
-  timeout: 10000,
+  timeout: 1000000,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json'

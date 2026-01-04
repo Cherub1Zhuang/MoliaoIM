@@ -4,8 +4,14 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { machineIdSync } from 'node-machine-id'
 import * as m from './mqtt_utils'
-
+import DB from './db'
 let mainWindow = null
+let db = null
+const initDBForUser = (userId) => {
+  if (!db) {
+    db = new DB(userId)
+  }
+}
 function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -16,7 +22,7 @@ function createWindow() {
     show: false,
     frame: false,
     autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
+    ...(process.platform === 'linux' ? { icon } : { icon }),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
@@ -32,14 +38,14 @@ function createWindow() {
     return { action: 'deny' }
   })
 
-  // HMR for renderer base on electron-vite cli.
-  // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
     mainWindow.webContents.openDevTools({ mode: 'detach' })
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+}
+const registerIpc = () => {
   ipcMain.handle('get-machine-id', async () => {
     return machineIdSync(true)
   })
@@ -58,48 +64,60 @@ function createWindow() {
       }
     }
   })
+  ipcMain.on('connect-mqtt', (event, data) => {
+    m.connectMqtt(data)
+  })
+  ipcMain.on('init-db', (event, userId) => {
+    initDBForUser(userId)
+  })
+  ipcMain.handle('db-operation', async (event, operation, data = {}) => {
+    if (!db) {
+      throw new Error('Database not initialized')
+    }
+    switch (operation) {
+      case 'get-conversations':
+        return await db.getAllConversations()
+      case 'upsert-conversations':
+        db.upsertConversations(data.conversations)
+        return true
+      case 'upsert-messages':
+        db.upsertMessages(data.messages)
+        return true
+      case 'get-messages-by-conversation':
+        return await db.getMessagesByConversation(data)
+      case 'filter-messages-and-upsert':
+        return await db.filterNewMessagesAndUpsert(data.messages)
+      case 'upsert-message':
+        db.upsertMessage(data.message)
+        return true
+      case 'mark-conversation-as-read':
+        db.markConversationAsRead(data.conversationType, data.target, data.line)
+        return true
+    }
+  })
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-  // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
+  electronApp.setAppUserModelId('com.weizhi.avconverter')
 
-  // Default open or close DevTools by F12 in development
-  // and ignore CommandOrControl + R in production.
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
-  ipcMain.on('connect-mqtt', (event, data) => {
-    m.connectMqtt(data)
-  })
-
   createWindow()
+  registerIpc()
 
   app.on('activate', function () {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
 })
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
 //发送消息到渲染进程
 export const sendToRenderer = (channel, ...args) => {
   if (mainWindow && mainWindow.webContents) {

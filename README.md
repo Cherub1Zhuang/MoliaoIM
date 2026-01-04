@@ -1,34 +1,6 @@
-# app
+本地穿透地址
+云语IM-server短链接服务：http://3yn85bg65540.vicp.fun 192.168.31.18:18080
 
-An Electron application with Vue
+云语app-server服务：https://3yn85bg65540.vicp.fun 192.168.31.18:8888
 
-## Recommended IDE Setup
-
-- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
-
-## Project Setup
-
-### Install
-
-```bash
-$ npm install
-```
-
-### Development
-
-```bash
-$ npm run dev
-```
-
-### Build
-
-```bash
-# For windows
-$ npm run build:win
-
-# For macOS
-$ npm run build:mac
-
-# For Linux
-$ npm run build:linux
-```
+云语IM-server长链接服务：3yn85bg65540.vicp.fun:25070 192.168.31.18:1883

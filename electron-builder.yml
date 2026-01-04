@@ -1,5 +1,5 @@
 appId: com.electron.app
-productName: app
+productName: 云语
 directories:
   buildResources: build
 files:
@@ -11,12 +11,14 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: app
+  executableName: 云语
+  icon: build/icon.ico
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
+  installerIcon: build/icon.ico
 mac:
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
