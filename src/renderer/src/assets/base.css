@@ -5,3 +5,9 @@ body {
   user-select: none;
   background-color: #f7f7f7;
 }
+button,
+a,
+img,
+.ant-image-preview * {
+  -webkit-app-region: no-drag;
+}

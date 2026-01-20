@@ -1,13 +1,15 @@
 import moment from 'moment'
+import imageCompression from 'browser-image-compression'
 import i18n from './i18n'
 import api from './api'
 import { reactive } from 'vue'
-
+const zhWeekMap = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
 export const formatWeChatTime = (timestamp) => {
   if (!timestamp) return ''
   const ts = timestamp.toString().length === 10 ? timestamp * 1000 : timestamp
 
-  moment.locale(i18n.global.locale.value)
+  moment.locale('zh-cn')
+  // moment.locale(i18n.global.locale.value)
 
   const time = moment(ts)
   const now = moment()
@@ -21,7 +23,7 @@ export const formatWeChatTime = (timestamp) => {
   }
 
   if (time.isSame(now, 'week')) {
-    return time.format(i18n.global.locale.value.startsWith('zh') ? 'dddd' : 'ddd')
+    return zhWeekMap[time.day()]
   }
 
   if (time.isSame(now, 'year')) {
@@ -48,6 +50,24 @@ export const getAvatarUrl = (userId) => {
   // 立刻返回占位图
   return DEFAULT_AVATAR
 }
+export const getUserInfo = (userId) => {
+  if (!userId) return null
+
+  let cached = userInfoCache[userId]
+
+  // 还没有任何缓存 → 初始化 & 触发请求
+  if (!cached) {
+    cached = userInfoCache[userId] = {
+      loading: false,
+      data: null,
+      error: false
+    }
+    fetchUserInfo(userId)
+  }
+  // 已存在缓存
+  return cached
+}
+
 export const fetchUserInfo = async (userId) => {
   const cached = userInfoCache[userId]
   if (cached?.loading) return
@@ -67,4 +87,37 @@ export const fetchUserInfo = async (userId) => {
   } catch {
     delete userInfoCache[userId]
   }
+}
+
+export const compressForIM = async (file) => {
+  const sizeKB = file.size / 1024
+
+  // 默认值
+  let quality = 0.85
+  let maxWidthOrHeight = 1920
+
+  if (sizeKB < 100) {
+    return file // 不压缩
+  } else if (sizeKB < 500) {
+    quality = 0.85
+    maxWidthOrHeight = 1920
+  } else if (sizeKB < 1024) {
+    quality = 0.8
+    maxWidthOrHeight = 1920
+  } else if (sizeKB < 5 * 1024) {
+    quality = 0.75
+    maxWidthOrHeight = 1920
+  } else {
+    quality = 0.7
+    maxWidthOrHeight = 1600
+  }
+
+  const compressed = await imageCompression(file, {
+    maxSizeMB: 5, // 兜底，不让它太离谱
+    maxWidthOrHeight,
+    initialQuality: quality,
+    useWebWorker: true
+  })
+
+  return compressed
 }

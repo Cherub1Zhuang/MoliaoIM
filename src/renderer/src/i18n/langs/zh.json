@@ -3,7 +3,8 @@
     "yesterday": "昨天"
   },
   "search": "搜索",
-  "group": "群组",
+  "group": "我的群组",
+  "friend": "我的好友",
   "send_btn": "发送",
   "login": {
     "welcome_back": "欢迎回来",

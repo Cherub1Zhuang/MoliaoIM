@@ -2,10 +2,15 @@
   <div class="flex w-screen h-screen">
     <left />
     <RouterView class="h-full flex-1"></RouterView>
+    <Teleport to="body">
+      <div class="fixed bottom-0 right-2 pointer-events-none text-[8px] text-gray-400 opacity-60">
+        Client ID: {{ st.im_token.clientId || '' }}
+      </div>
+    </Teleport>
   </div>
 </template>
 <script setup>
-import { ref, onMounted, h } from 'vue'
+import { ref, onMounted, toRaw } from 'vue'
 import left from './home/left.vue'
 import { useUserStore } from '../stores/user'
 import api from '../api'
@@ -14,33 +19,13 @@ import { useRoute } from 'vue-router'
 const st = useUserStore()
 const route = useRoute()
 
-const updateConversation = (convs) => {
-  convs.forEach((c) => {
-    console.log('Updating conversation:', c)
-    const st_c = st.conversations.find(
-      (item) =>
-        item.conversationType === c.conversationType &&
-        item.target === c.target &&
-        (item.line || 0) === (c.line || 0)
-    )
-    if (st_c) {
-      st_c.lastMessageId = c.lastMessageId
-      st_c.lastMessageSender = c.lastMessageSender
-      st_c.lastMessageContent = c.lastMessageContent
-      st_c.lastMessageTime = c.lastMessageTime
-      st_c.unreadCount = c.unreadCount
-    }
-  })
-  st.get_current_conv_msgs({
-    conversationType: Number(route.query.conversationType),
-    target: route.params.target,
-    line: 0,
-    limit: 100
-  })
-}
-
 const handleMqttMsg = (data) => {
+  console.log('Received MQTT message:', data)
   if (data.topic === 'MN') pullMsg()
+  if (data.topic === 'FN' || data.topic === 'FRN') {
+    st.get_friend_requests()
+    pullMsg()
+  }
 }
 const pullMsg = () => {
   api.msg
@@ -52,24 +37,52 @@ const pullMsg = () => {
     })
     .then(async (res) => {
       console.log('Pulled messages:', res.result.messages)
+
       // const msgs = res.result.messages
       const msgs = res.result.messages.map((msg) => {
         const conv_type = msg.conv.type
         if (conv_type === 0) {
-          msg.conv.target =
-            msg.sender === st.userinfo.userId
-              ? msg.conv.target + '|' + msg.sender
-              : msg.sender + '|' + msg.conv.target
-          msg.payload.content = msg.payload.searchableContent
+          msg.conv.target = msg.sender === st.userinfo.userId ? msg.conv.target : msg.sender
+          msg.payload.content =
+            msg.payload.content !== '' ? msg.payload.content : msg.payload.searchableContent
+        }
+
+        if (
+          msg.conv.target === route.params.target &&
+          conv_type === Number(route.query.conversationType) &&
+          msg.conv.line === Number(route.query.line || 0)
+        ) {
+          console.log('更新当前会话消息列表', msg)
+          st.update_current_conv_msgs([msg])
+          msg.isRead = true
         }
         return msg
       })
+      const hasNewConv = msgs.some((msg) => {
+        return !st.conversations.find(
+          (c) =>
+            c.conversationType === msg.conv.type &&
+            c.target === msg.conv.target &&
+            c.line === msg.conv.line
+        )
+      })
+
+      // 消息入库
       window.electron.ipcRenderer
-        .invoke('db-operation', 'filter-messages-and-upsert', {
+        .invoke('db-operation', 'upsert-messages', {
           messages: msgs
         })
-        .then((res) => {
-          updateConversation(res)
+        .then(async (res) => {
+          if (hasNewConv) {
+            console.log('New conversation detected, refreshing conversation list')
+            st.get_conversation_list()
+          } else {
+            await window.electron.ipcRenderer
+              .invoke('db-operation', 'get-conversations')
+              .then((final_convs) => {
+                st.conversations = final_convs
+              })
+          }
         })
     })
 }

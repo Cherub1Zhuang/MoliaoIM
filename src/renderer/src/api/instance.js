@@ -1,5 +1,4 @@
 import axios from 'axios'
-
 const NO_TOKEN_URLS = [
   '/login_pwd'
   // '/contact/friends'

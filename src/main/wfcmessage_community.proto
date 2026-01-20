@@ -1,0 +1,847 @@
+// wfcmessage_community.proto
+// 从WFCMessage.java反推生成的protobuf定义文件
+// 包含所有76个消息类型的定义
+
+syntax = "proto2";
+
+package cn.wildfirechat.proto;
+
+// 会话类型
+enum ConversationType {
+  ConversationType_Private = 0;      // 私聊
+  ConversationType_Group = 1;         // 群聊
+  ConversationType_ChatRoom = 2;      // 聊天室
+  ConversationType_Channel = 3;       // 频道
+  ConversationType_Things = 4;        // 物联网
+  ConversationType_SecretChat = 5;     // 密聊
+}
+
+// 消息内容类型
+enum ContentType {
+  Unknown = 0;
+  Text = 1;                           // 文本
+  Voice = 2;                          // 语音
+  Image = 3;                          // 图片
+  Location = 4;                       // 位置
+  File = 5;                           // 文件
+  Video = 6;                          // 视频
+  Sticker = 7;                        // 表情
+  Link = 8;                           // 链接
+  P_TEXT = 9;                         // 富文本
+  Name_Card = 10;                     // 名片
+  Composited = 11;                    // 复合消息
+  Rich_Notification = 12;             // 富通知
+  Articles = 13;                      // 文章
+  StreamingText_Generationg = 14;     // 流式文本生成中
+  StreamingText_Generated = 15;        // 流式文本已生成
+  Not_Delivered = 16;                 // 未送达
+  Ptt_Voice = 23;                     // PTT语音
+  Enter_Channel_Chat = 71;            // 进入频道聊天
+  Leave_Channel_Chat = 72;             // 离开频道聊天
+  Recall = 80;                        // 撤回
+  Delete = 81;                        // 删除
+  Tip = 90;                           // 提示
+  Typing = 91;                        // 正在输入
+  Friend_Greeting = 92;               // 好友问候
+  Friend_Added = 93;                  // 好友已添加
+  PC_Login_Request = 94;              // PC登录请求
+  Create_Group = 104;                 // 创建群组
+  Add_Group_Member = 105;            // 添加群成员
+  Kickoff_Group_Member = 106;         // 踢出群成员
+  Quit_Group = 107;                   // 退出群组
+  Dismiss_Group = 108;                // 解散群组
+  Transfer_Group_Owner = 109;         // 转移群主
+  Change_Group_Name = 110;            // 修改群名称
+  Modify_Group_Alias = 111;           // 修改群别名
+  Change_Group_Portrait = 112;        // 修改群头像
+  Change_Group_Mute = 113;            // 修改群禁言
+  Change_Group_JoinType = 114;        // 修改群加入类型
+  Change_Group_PrivateChat = 115;     // 修改群私聊
+  Change_Group_Searchable = 116;      // 修改群可搜索
+  Set_Group_Manager = 117;            // 设置群管理员
+  Mute_Group_Member = 118;            // 禁言群成员
+  Allow_Group_Member = 119;           // 允许群成员
+  Kickoff_Group_Member_Visible_Notification = 120;  // 踢出群成员可见通知
+  Quit_Group_Visible_Notification = 121;           // 退出群组可见通知
+  Modify_Group_Extra = 122;           // 修改群扩展信息
+  Modify_Group_Member_Extra = 123;    // 修改群成员扩展信息
+  Call_Start = 400;                   // 开始通话
+  Call_Accept = 401;                  // 接受通话
+  Call_End = 402;                     // 结束通话
+  Call_Add_Participant = 406;         // 添加通话参与者
+  Call_Multi_Call_Ongoing = 416;      // 多方通话进行中
+}
+
+// 会话信息
+message Conversation {
+  required int32 type = 1;             // 会话类型
+  required string target = 2;          // 目标ID（用户ID或群ID）
+  optional int32 line = 3;             // 线路
+}
+
+// 消息内容
+message MessageContent {
+  required int32 type = 1;             // 消息类型
+  optional string searchable_content = 2; // 可搜索内容
+  optional string push_content = 3;      // 推送内容
+  optional string content = 4;         // 消息内容
+  optional bytes data = 5;             // 二进制数据
+  optional int32 media_type = 6;        // 媒体类型
+  optional string remote_media_url = 7;  // 远程媒体URL
+  optional int32 persist_flag = 8;     // 持久化标志
+  optional int32 expire_duration = 9;  // 过期时长
+  optional int32 mentioned_type = 10;  // @类型
+  repeated string mentioned_target = 11; // @目标列表
+  optional string extra = 12;          // 扩展信息
+  optional string push_data = 13;      // 推送数据
+}
+
+// 消息对象
+message Message {
+  required Conversation conversation = 1; // 会话信息
+  required string from_user = 2;         // 发送者
+  required MessageContent content = 3;  // 消息内容
+  optional int64 message_id = 4;        // 消息ID
+  optional int64 server_timestamp = 5;  // 服务器时间戳
+  optional string to_user = 6;          // 接收者（已废弃，不使用）
+  repeated string to = 7;               // 接收者列表（群发消息）
+}
+
+// 拉取消息请求
+message PullMessageRequest {
+  required int64 id = 1;               // 消息ID，0表示拉取最新
+  required int32 type = 2;             // 拉取类型：0-普通消息，1-聊天室消息
+  optional int64 delay = 3;            // 延迟时间
+}
+
+// 拉取消息结果
+message PullMessageResult {
+  repeated Message message = 1;        // 消息列表（注意：字段名是message，不是messages）
+  required int64 current = 2;          // 当前消息ID
+  required int64 head = 3;             // 头部消息ID
+}
+
+// 拉取历史消息请求（注意：实际消息类型名是LoadRemoteMessages，不是LoadRemoteMessagesRequest）
+message LoadRemoteMessages {
+  required Conversation conversation = 1; // 会话信息
+  required int64 before_uid = 2;         // 在此消息ID之前拉取（注意：字段名是before_uid，不是beforeUid）
+  required int32 count = 3;              // 拉取数量
+  repeated int32 content_type = 4;      // 消息类型过滤列表（注意：字段名是content_type，不是contentType）
+}
+
+// 拉取历史消息结果（注意：实际可能没有单独的Result类型，需要确认）
+// 暂时保留，如果不存在则删除
+message LoadRemoteMessagesResult {
+  repeated Message messages = 1;       // 消息列表
+}
+
+// INT64Buf（用于标记已读、撤回等操作）
+message INT64Buf {
+  required int64 id = 1;               // ID
+}
+
+// 获取Token请求
+message GetTokenRequest {
+  required string user_id = 1;          // 用户ID
+  required string client_id = 2;       // 客户端ID
+  optional int32 platform = 3;         // 平台类型
+}
+
+// 添加好友请求
+message AddFriendRequest {
+  required string target_uid = 1;      // 目标用户ID
+  required string reason = 2;          // 原因
+  optional string extra = 3;           // 扩展信息
+}
+
+// 用户信息
+message UserInfo {
+  required string uid = 1;             // 用户ID
+  optional string name = 2;             // 姓名
+  optional string display_name = 3;      // 显示名
+  optional string portrait = 4;        // 头像
+  optional int32 gender = 5;           // 性别
+  optional string mobile = 6;           // 手机号
+  optional string email = 7;           // 邮箱
+  optional string address = 8;         // 地址
+  optional string company = 9;         // 公司
+  optional string social = 10;         // 社交账号
+  optional string extra = 11;         // 扩展信息
+  optional int32 type = 12;           // 用户类型
+  optional int32 update_dt = 13;       // 更新时间
+}
+
+// 群组信息
+message GroupInfo {
+  required string target = 1;          // 群ID
+  optional string name = 2;             // 群名称
+  optional string portrait = 3;         // 群头像
+  optional string owner = 4;           // 群主
+  optional int32 type = 5;             // 群类型
+  optional int32 member_count = 6;     // 成员数量
+  optional string extra = 7;           // 扩展信息
+  optional int32 update_dt = 8;        // 更新时间
+}
+
+// 群成员信息
+message GroupMember {
+  required string group_id = 1;         // 群ID
+  required string member_id = 2;        // 成员ID
+  optional int32 type = 3;             // 成员类型
+  optional string alias = 4;           // 群昵称
+  optional string extra = 5;           // 扩展信息
+  optional int32 update_dt = 6;        // 更新时间
+}
+
+// 创建群组请求
+message CreateGroupRequest {
+  required string group_id = 1;        // 群ID（可选，服务器可生成）
+  required string name = 2;            // 群名称
+  optional string portrait = 3;       // 群头像
+  optional int32 type = 4;             // 群类型
+  repeated string members = 5;        // 初始成员列表
+  optional string extra = 6;           // 扩展信息
+}
+
+// 修改群组信息请求
+message ModifyGroupInfoRequest {
+  required string group_id = 1;        // 群ID
+  required int32 type = 2;             // 修改类型
+  optional string value = 3;          // 新值
+  repeated string notify_lines = 4;     // 通知线路
+}
+
+// 添加群成员请求
+message AddGroupMemberRequest {
+  required string group_id = 1;        // 群ID
+  repeated string members = 2;        // 要添加的成员列表
+  repeated string notify_lines = 3;    // 通知线路
+}
+
+// 踢出群成员请求
+message KickoffGroupMemberRequest {
+  required string group_id = 1;        // 群ID
+  repeated string members = 2;        // 要踢出的成员列表
+  repeated string notify_lines = 3;     // 通知线路
+}
+
+// 退出群组请求
+message QuitGroupRequest {
+  required string group_id = 1;        // 群ID
+  repeated string notify_lines = 2;    // 通知线路
+}
+
+// 解散群组请求
+message DismissGroupRequest {
+  required string group_id = 1;        // 群ID
+  repeated string notify_lines = 2;    // 通知线路
+}
+
+// 转移群主请求
+message TransferGroupRequest {
+  required string group_id = 1;        // 群ID
+  required string new_owner = 2;       // 新群主ID
+  repeated string notify_lines = 3;    // 通知线路
+}
+
+// 设置群管理员请求
+message SetGroupManagerRequest {
+  required string group_id = 1;        // 群ID
+  required string member_id = 2;       // 成员ID
+  required bool is_manager = 3;        // 是否设置为管理员
+  repeated string notify_lines = 4;    // 通知线路
+}
+
+// 修改群成员别名请求
+message ModifyGroupMemberAliasRequest {
+  required string group_id = 1;        // 群ID
+  required string member_id = 2;       // 成员ID
+  optional string alias = 3;          // 新别名
+  repeated string notify_lines = 4;     // 通知线路
+}
+
+// 获取群组信息请求
+message GetGroupInfoRequest {
+  required string group_id = 1;        // 群ID
+}
+
+// 获取群成员请求
+message GetGroupMemberRequest {
+  required string group_id = 1;        // 群ID
+  optional int32 offset = 2;          // 偏移量
+  optional int32 count = 3;            // 数量
+}
+
+// 获取群成员结果
+message GetGroupMemberResult {
+  repeated GroupMember members = 1;   // 成员列表
+  optional int32 total = 2;           // 总数量
+}
+
+// 获取用户信息请求
+message GetUserInfoRequest {
+  repeated string user_ids = 1;        // 用户ID列表
+}
+
+// 获取用户信息结果
+message GetUserInfoResult {
+  repeated UserInfo users = 1;        // 用户信息列表
+}
+
+// 修改我的信息请求
+message ModifyMyInfoRequest {
+  required int32 type = 1;            // 修改类型
+  optional string value = 2;          // 新值
+}
+
+// 搜索用户请求
+message UserSearchRequest {
+  required string keyword = 1;        // 关键词
+  optional int32 type = 2;             // 搜索类型
+}
+
+// 搜索用户结果
+message UserSearchResult {
+  repeated UserInfo users = 1;        // 用户列表
+}
+
+// 添加好友请求
+message FriendRequest {
+  required string target_uid = 1;      // 目标用户ID
+  required string reason = 2;         // 原因
+  optional string extra = 3;          // 扩展信息
+  optional int32 status = 4;          // 状态
+  optional int64 timestamp = 5;       // 时间戳
+}
+
+// 处理好友请求
+message HandleFriendRequest {
+  required string target_uid = 1;      // 目标用户ID
+  required int32 status = 2;          // 状态：0-已发送，1-已接受，2-已拒绝
+}
+
+// 删除好友请求
+message DeleteFriendRequest {
+  required string target_uid = 1;      // 目标用户ID
+}
+
+// 拉黑用户请求
+message BlackListUserRequest {
+  required string target_uid = 1;      // 目标用户ID
+  required bool is_black = 2;          // 是否拉黑
+}
+
+// 设置好友别名请求
+message SetFriendAliasRequest {
+  required string target_uid = 1;      // 目标用户ID
+  optional string alias = 2;          // 别名
+}
+
+// 频道信息
+message ChannelInfo {
+  required string channel_id = 1;       // 频道ID
+  optional string name = 2;            // 频道名称
+  optional string portrait = 3;        // 频道头像
+  optional string owner = 4;           // 频道主
+  optional string desc = 5;            // 描述
+  optional int32 status = 6;           // 状态
+  optional string extra = 7;           // 扩展信息
+  optional int32 update_dt = 8;        // 更新时间
+}
+
+// 创建频道请求
+message CreateChannelRequest {
+  required string channel_id = 1;       // 频道ID（可选）
+  required string name = 2;            // 频道名称
+  optional string portrait = 3;        // 频道头像
+  optional string desc = 4;            // 描述
+  optional int32 status = 5;           // 状态
+  optional string extra = 6;           // 扩展信息
+}
+
+// 修改频道信息请求
+message ModifyChannelInfoRequest {
+  required string channel_id = 1;       // 频道ID
+  required int32 type = 2;              // 修改类型
+  optional string value = 3;           // 新值
+}
+
+// 频道订阅请求
+message ChannelListenRequest {
+  required string channel_id = 1;       // 频道ID
+  required bool listen = 2;           // 是否订阅
+}
+
+// 聊天室信息
+message ChatroomInfo {
+  required string chatroom_id = 1;     // 聊天室ID
+  optional string title = 2;           // 标题
+  optional string desc = 3;            // 描述
+  optional string portrait = 4;        // 头像
+  optional string extra = 5;           // 扩展信息
+  optional int32 state = 6;           // 状态
+  optional int32 member_count = 7;      // 成员数量
+  optional int32 create_dt = 8;         // 创建时间
+  optional int32 update_dt = 9;         // 更新时间
+}
+
+// 加入聊天室请求
+message JoinChatroomRequest {
+  required string chatroom_id = 1;      // 聊天室ID
+}
+
+// 退出聊天室请求
+message QuitChatroomRequest {
+  required string chatroom_id = 1;      // 聊天室ID
+}
+
+// 获取聊天室信息请求
+message GetChatroomInfoRequest {
+  required string chatroom_id = 1;      // 聊天室ID
+}
+
+// 获取聊天室成员请求
+message GetChatroomMemberRequest {
+  required string chatroom_id = 1;      // 聊天室ID
+  optional int32 max_count = 2;         // 最大数量
+}
+
+// 获取聊天室成员结果
+message GetChatroomMemberResult {
+  repeated string members = 1;         // 成员ID列表
+  optional int32 total = 2;            // 总数量
+}
+
+// 用户设置
+message UserSetting {
+  required int32 scope = 1;            // 设置范围
+  required string key = 2;              // 键
+  optional string value = 3;           // 值
+  optional int64 update_dt = 4;          // 更新时间
+}
+
+// 获取用户设置请求
+message GetUserSettingRequest {
+  required int32 scope = 1;            // 设置范围
+  repeated string keys = 2;            // 键列表
+}
+
+// 获取用户设置结果
+message GetUserSettingResult {
+  repeated UserSetting settings = 1;   // 设置列表
+}
+
+// 设置用户设置请求
+message PutUserSettingRequest {
+  required UserSetting setting = 1;    // 设置信息
+}
+
+// 文件上传Token请求
+message GetQiniuUploadTokenRequest {
+  required int32 media_type = 1;        // 媒体类型
+}
+
+// 文件上传Token结果
+message GetQiniuUploadTokenResult {
+  required string token = 1;            // 上传Token
+  optional string domain = 2;          // 域名
+  optional string server = 3;           // 服务器地址
+}
+
+// 设备Token上传请求
+message UploadDeviceTokenRequest {
+  required int32 platform = 1;         // 平台类型
+  required string device_token = 2;     // 设备Token
+  optional string app_name = 3;          // 应用名称
+}
+
+// 应用Token请求
+message GetApplicationTokenRequest {
+  required string application_id = 1;    // 应用ID
+  required string application_secret = 2; // 应用密钥
+}
+
+// 应用Token结果
+message GetApplicationTokenResult {
+  required string token = 1;            // Token
+  optional int64 expire_time = 2;       // 过期时间
+}
+
+// 应用配置结果
+message ApplicationConfigResult {
+  optional string config = 1;          // 配置信息（JSON格式）
+}
+
+// 销毁用户请求
+message DestroyUserRequest {
+  required string user_id = 1;          // 用户ID
+}
+
+// 踢出PC客户端请求
+message KickoffPCClientRequest {
+  required string user_id = 1;         // 用户ID
+  required string client_id = 2;        // 客户端ID
+}
+
+// 清理会话请求（退出登录）
+message ClearSessionRequest {
+  required int32 request = 1;         // 请求类型：1-禁用会话，8-清理会话
+}
+
+// 撤回消息通知
+message NotifyRecallMessage {
+  required int64 id = 1;              // 消息ID
+  required string from_user = 2;       // 发送者
+}
+
+// 通用结果
+message GeneralResult {
+  required int32 error_code = 1;      // 错误码
+}
+
+// ID缓冲区
+message IDBuf {
+  required string id = 1;             // ID
+}
+
+// ID列表缓冲区
+message IDListBuf {
+  repeated string id = 1;             // ID列表
+}
+
+// 群组（包含群信息和成员列表）
+message Group {
+  required GroupInfo group_info = 1;   // 群信息
+  repeated GroupMember members = 2;   // 成员列表
+}
+
+// 用户信息（完整版）
+message User {
+  required string uid = 1;            // 用户ID
+  optional string name = 2;           // 姓名
+  optional string display_name = 3;   // 显示名
+  optional string portrait = 4;        // 头像
+  optional string mobile = 5;          // 手机号
+  optional string email = 6;           // 邮箱
+  optional string address = 7;         // 地址
+  optional string company = 8;         // 公司
+  optional string extra = 9;           // 扩展信息
+  optional int64 update_dt = 10;      // 更新时间
+  optional int32 gender = 11;          // 性别
+  optional string social = 12;         // 社交账号
+  optional int32 type = 13;            // 用户类型
+  optional int32 deleted = 14;        // 删除标志
+}
+
+// 机器人信息
+message Robot {
+  required string uid = 1;            // 机器人ID
+  required int32 state = 2;            // 状态：0-正常，1-已删除
+  optional string owner = 3;           // 所有者
+  optional string secret = 4;          // 密钥
+  optional string callback = 5;        // 回调地址
+  optional string extra = 6;           // 扩展信息
+}
+
+// 通知消息
+message NotifyMessage {
+  required int32 type = 1;             // 通知类型
+  required int64 head = 2;             // 头部消息ID
+  optional string target = 3;          // 目标
+}
+
+// 拉取群组信息结果
+message PullGroupInfoResult {
+  repeated GroupInfo info = 1;         // 群组信息列表
+}
+
+// 拉取群成员请求
+message PullGroupMemberRequest {
+  required string target = 1;          // 群ID
+  required int64 head = 2;             // 头部消息ID
+}
+
+// 拉取群成员结果
+message PullGroupMemberResult {
+  repeated GroupMember member = 1;     // 成员列表
+}
+
+// 用户请求
+message UserRequest {
+  required string uid = 1;             // 用户ID
+  optional int64 update_dt = 2;       // 更新时间
+}
+
+// 拉取用户请求
+message PullUserRequest {
+  repeated UserRequest request = 1;    // 用户请求列表
+}
+
+// 用户结果
+message UserResult {
+  required User user = 1;              // 用户信息
+  required int32 code = 2;             // 状态码
+}
+
+// 拉取用户结果
+message PullUserResult {
+  repeated UserResult result = 1;      // 用户结果列表
+}
+
+// 移除群成员请求
+message RemoveGroupMemberRequest {
+  required string group_id = 1;        // 群ID
+  repeated string removed_member = 2; // 要移除的成员列表
+  repeated int32 to_line = 3;         // 通知线路
+  optional MessageContent notify_content = 4; // 通知内容
+}
+
+// 修改群成员别名
+message ModifyGroupMemberAlias {
+  required string group_id = 1;        // 群ID
+  required string alias = 2;           // 新别名
+  repeated int32 to_line = 3;         // 通知线路
+  optional MessageContent notify_content = 4; // 通知内容
+  optional string member_id = 5;       // 成员ID
+}
+
+// 修改群成员扩展信息
+message ModifyGroupMemberExtra {
+  required string group_id = 1;        // 群ID
+  repeated int32 to_line = 2;         // 通知线路
+  optional MessageContent notify_content = 3; // 通知内容
+  optional string extra = 4;           // 扩展信息
+  optional string member_id = 5;       // 成员ID
+}
+
+// 用户设置条目
+message UserSettingEntry {
+  required int32 scope = 1;            // 设置范围
+  required string key = 2;             // 键
+  required string value = 3;           // 值
+  optional int64 update_dt = 4;       // 更新时间
+}
+
+// 修改用户设置请求
+message ModifyUserSettingReq {
+  required int32 scope = 1;            // 设置范围
+  required string key = 2;             // 键
+  required string value = 3;           // 值
+}
+
+// 版本信息
+message Version {
+  required int64 version = 1;          // 版本号
+}
+
+// 好友信息
+message Friend {
+  required string uid = 1;             // 用户ID
+  required int32 state = 2;             // 状态
+  required int64 update_dt = 3;        // 更新时间
+  optional string alias = 4;            // 别名
+  optional int32 blacked = 5;           // 是否拉黑
+  optional string extra = 6;            // 扩展信息
+}
+
+// 获取好友列表结果
+message GetFriendsResult {
+  repeated Friend entry = 1;           // 好友列表
+}
+
+// 获取好友请求结果
+message GetFriendRequestResult {
+  repeated FriendRequest entry = 1;    // 好友请求列表
+}
+
+// 连接确认负载
+message ConnectAckPayload {
+  optional int64 msg_head = 1;         // 消息头部
+  optional int64 friend_head = 2;      // 好友头部
+  optional int64 friend_rq_head = 3;   // 好友请求头部
+  optional int64 setting_head = 4;     // 设置头部
+  optional string node_addr = 5;       // 节点地址
+  optional int32 node_port = 6;        // 节点端口
+  optional int64 server_time = 7;      // 服务器时间
+}
+
+// IM HTTP包装器
+message IMHttpWrapper {
+  required string token = 1;           // Token
+  required string client_id = 2;       // 客户端ID
+  required string request = 3;          // 请求
+  optional string data = 4;            // 数据
+}
+
+// 搜索用户请求
+message SearchUserRequest {
+  required string keyword = 1;          // 关键词
+  optional int32 fuzzy = 2;            // 模糊匹配
+  optional int32 page = 3;              // 页码
+  optional string domain_id = 4;       // 域名ID
+  optional int32 type = 5;              // 类型
+}
+
+// 搜索用户结果
+message SearchUserResult {
+  repeated User entry = 1;             // 用户列表
+}
+
+// 获取聊天室成员信息请求
+message GetChatroomMemberInfoRequest {
+  required string chatroom_id = 1;     // 聊天室ID
+  optional int32 max_count = 2;        // 最大数量
+}
+
+// 聊天室成员信息
+message ChatroomMemberInfo {
+  optional int32 member_count = 1;     // 成员数量
+  repeated string members = 2;         // 成员ID列表
+}
+
+// 拉黑用户请求
+message BlackUserRequest {
+  required string uid = 1;             // 用户ID
+  required int32 status = 2;            // 状态
+}
+
+// 路由请求
+message RouteRequest {
+  optional string app = 1;              // 应用
+  optional int32 platform = 2;         // 平台
+  optional int32 push_type = 3;        // 推送类型
+  optional string device_name = 4;      // 设备名称
+  optional string device_version = 5;   // 设备版本
+  optional string phone_name = 6;       // 手机名称
+  optional string language = 7;         // 语言
+  optional string carrier_name = 8;     // 运营商名称
+  optional string app_version = 9;      // 应用版本
+  optional string sdk_version = 10;     // SDK版本
+}
+
+// 路由响应
+message RouteResponse {
+  required string host = 1;             // 主机
+  required int32 long_port = 2;        // 长连接端口
+  required int32 short_port = 3;       // 短连接端口
+}
+
+// 多播消息
+message MultiCastMessage {
+  required string from_user = 1;       // 发送者
+  required MessageContent content = 2; // 消息内容
+  repeated string to = 3;              // 接收者列表
+  optional int32 line = 4;             // 线路
+}
+
+// 撤回多播消息请求
+message RecallMultiCastMessageRequest {
+  required int64 message_id = 1;       // 消息ID
+  repeated string receiver = 2;         // 接收者列表
+}
+
+// 授权码请求
+message AuthCodeRequest {
+  required string target_id = 1;       // 目标ID
+  required int32 type = 2;             // 类型
+  required string host = 3;            // 主机
+}
+
+// 频道菜单
+message ChannelMenu {
+  required string type = 1;             // 类型
+  required string name = 2;             // 名称
+  optional string key = 3;             // 键
+  optional string url = 4;             // URL
+  optional string media_id = 5;         // 媒体ID
+  optional string article_id = 6;       // 文章ID
+  optional string app_id = 7;           // 应用ID
+  optional string app_page = 8;         // 应用页面
+  repeated ChannelMenu sub_menu = 9;    // 子菜单
+  optional string menu_id = 10;        // 菜单ID
+  optional string extra = 11;           // 扩展信息
+}
+
+// 频道菜单列表
+message ChannelMenuList {
+  repeated ChannelMenu menu = 1;        // 菜单列表
+}
+
+// 修改频道信息
+message ModifyChannelInfo {
+  required string channel_id = 1;      // 频道ID
+  required int32 type = 2;             // 修改类型
+  required string value = 3;           // 新值
+}
+
+// 转移频道
+message TransferChannel {
+  required string channel_id = 1;      // 频道ID
+  required string new_owner = 2;        // 新所有者
+}
+
+// 拉取频道信息
+message PullChannelInfo {
+  required string channel_id = 1;      // 频道ID
+  required int64 head = 2;              // 头部消息ID
+}
+
+// 拉取频道监听者
+message PullChannelListener {
+  required string channel_id = 1;      // 频道ID
+  required int32 offset = 2;           // 偏移量
+  required int32 count = 3;            // 数量
+}
+
+// 拉取频道监听者结果
+message PullChannelListenerResult {
+  required int32 total_count = 1;      // 总数量
+  required int32 offset = 2;           // 偏移量
+  repeated string listener = 3;         // 监听者列表
+}
+
+// 监听频道
+message ListenChannel {
+  required string channel_id = 1;      // 频道ID
+  required int32 listen = 2;           // 是否监听
+}
+
+// 搜索频道结果
+message SearchChannelResult {
+  repeated ChannelInfo channel = 1;    // 频道列表
+  required string keyword = 2;          // 关键词
+}
+
+// 获取机器人列表结果
+message GetRobotsResult {
+  repeated Robot entry = 1;            // 机器人列表
+}
+
+// 信息条目
+message InfoEntry {
+  required int32 type = 1;             // 类型
+  required string value = 2;           // 值
+}
+
+// 获取上传Token请求
+message GetUploadTokenRequest {
+  required int32 media_type = 1;       // 媒体类型
+  required string media_path = 2;       // 媒体路径
+}
+
+// 获取上传Token结果
+message GetUploadTokenResult {
+  required string domain = 1;           // 域名
+  required string token = 2;            // Token
+  required string server = 3;           // 服务器
+  optional int32 port = 4;             // 端口
+}
+
+// 应用配置请求（完整版）
+message ApplicationConfigRequest {
+  required string app_id = 1;           // 应用ID
+  required int32 app_type = 2;          // 应用类型
+  required int64 timestamp = 3;        // 时间戳
+  required string nonce = 4;           // 随机数
+  required string signature = 5;       // 签名
+}

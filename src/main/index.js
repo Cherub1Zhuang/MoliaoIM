@@ -1,10 +1,13 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog, session } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { machineIdSync } from 'node-machine-id'
 import * as m from './mqtt_utils'
-import DB from './db'
+// import DB from './db'
+import DB from './new_db'
+import path from 'path'
+
 let mainWindow = null
 let db = null
 const initDBForUser = (userId) => {
@@ -70,6 +73,12 @@ const registerIpc = () => {
   ipcMain.on('init-db', (event, userId) => {
     initDBForUser(userId)
   })
+  ipcMain.on('disconnect-db', (event) => {
+    if (db) {
+      db.disconnect()
+      db = null
+    }
+  })
   ipcMain.handle('db-operation', async (event, operation, data = {}) => {
     if (!db) {
       throw new Error('Database not initialized')
@@ -77,23 +86,50 @@ const registerIpc = () => {
     switch (operation) {
       case 'get-conversations':
         return await db.getAllConversations()
+      case 'get-conversation':
+        return await db.getConversation(data.conversationType, data.target, data.line)
       case 'upsert-conversations':
         db.upsertConversations(data.conversations)
         return true
       case 'upsert-messages':
-        db.upsertMessages(data.messages)
-        return true
+        return await db.upsertMessages(data.messages)
       case 'get-messages-by-conversation':
         return await db.getMessagesByConversation(data)
       case 'filter-messages-and-upsert':
         return await db.filterNewMessagesAndUpsert(data.messages)
       case 'upsert-message':
-        db.upsertMessage(data.message)
-        return true
+        return await db.upsertMessage(data.message)
       case 'mark-conversation-as-read':
         db.markConversationAsRead(data.conversationType, data.target, data.line)
         return true
+      case 'set-conversation-top':
+        db.setConversationTop(data.conversationType, data.target, data.line, data.isTop)
+        return true
+      case 'updateMessagePayloadTypeByMsgId':
+        return await db.updateMessagePayloadTypeByMsgId(data.messageId, data.type)
+      case 'delete-messages-by-ids':
+        return await db.deleteMessagesByIds(data.messageIds)
+      default:
+        return null
     }
+  })
+  ipcMain.on('open-external-link', (_, url) => {
+    shell.openExternal(url)
+  })
+  ipcMain.on('download-file', async (_, data) => {
+    const { canceled, filePath } = await dialog.showSaveDialog(mainWindow, {
+      title: '保存文件',
+      defaultPath: path.join(app.getPath('downloads'), data.fileName),
+      buttonLabel: '保存',
+      properties: ['createDirectory', 'openDirectory']
+    })
+    if (canceled || !filePath) return
+    session.defaultSession.once('will-download', (e, item) => {
+      item.setSavePath(filePath)
+      item.on('updated', (e, state) => {})
+      item.once('done', (e, state) => {})
+    })
+    mainWindow.webContents.downloadURL(data.url)
   })
 }
 

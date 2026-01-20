@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package WFCMessage;
+
+message PullMessageRequest {
+  int64 id = 1;
+  int32 type = 2;
+  int32 delay = 3;
+}
+
+message PullMessageResult {
+  repeated Message message = 1;
+  int64 current = 2;
+  int64 head = 3;
+}
+
+message Message {
+  int64 messageId = 1;
+  string sender = 2;
+  int32 conversationType = 3;
+  bytes content = 4;
+  int64 timestamp = 5;
+}

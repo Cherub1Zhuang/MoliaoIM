@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-full min-h-0 flex no-drag">
+  <div class="w-full h-full min-h-0 flex no-drag divide-x divide-gray-200">
     <vue-resizable
       class="h-full"
       max-width="500"
@@ -13,10 +13,11 @@
       <div class="h-full min-h-0 flex flex-col">
         <topSearch />
         <div class="flex-1 overflow-auto scrollbar-hide">
-          <div>
+          <div class="border-b border-gray-200">
             <div class="px-3 py-1 text-xs text-gray-500">{{ t('group') }}</div>
             <contactCard v-for="group in st.groups" :key="group.target_id" :data="group" />
           </div>
+          <div class="px-3 py-1 text-xs text-gray-500">{{ t('friend') }}</div>
           <div v-for="item in st.sort_friends" :key="item.letter" class="">
             <div class="px-3 py-1 text-xs text-gray-500">{{ item.letter }}</div>
             <contactCard v-for="friend in item.list" :key="friend.userId" :data="friend" />
@@ -25,7 +26,7 @@
       </div>
     </vue-resizable>
 
-    <div class="flex-1 bg-red-50 h-full"></div>
+    <router-view class="flex-1 h-full" :key="$route.fullPath"></router-view>
   </div>
 </template>
 <script setup>

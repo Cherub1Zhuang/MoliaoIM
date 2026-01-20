@@ -26,7 +26,19 @@ const routes = [
       {
         path: 'friends',
         name: 'friends',
-        component: () => import('@renderer/views/home/friends.vue')
+        component: () => import('@renderer/views/home/friends.vue'),
+        children: [
+          {
+            path: '',
+            name: 'friends-default',
+            component: () => import('@renderer/views/home/chats/default.vue')
+          },
+          {
+            path: 'info/:id',
+            name: 'friend-info',
+            component: () => import('@renderer/views/home/friends/info.vue')
+          }
+        ]
       }
     ],
     meta: { requireLogin: true }

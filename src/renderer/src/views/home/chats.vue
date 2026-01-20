@@ -12,8 +12,8 @@
     >
       <div class="h-full min-h-0 flex flex-col">
         <topSearch />
-        <div class="flex-1 overflow-auto">
-          <RecycleScroller
+        <div class="flex-1 overflow-auto scrollbar-hide">
+          <!-- <RecycleScroller
             :key="st.sort_conversations.length"
             class="h-full scrollbar-hide"
             :items="st.sort_conversations"
@@ -22,7 +22,12 @@
             v-slot="{ item }"
           >
             <chatCard :data="item" />
-          </RecycleScroller>
+          </RecycleScroller> -->
+          <chatCard
+            v-for="item in st.sort_conversations"
+            :key="item.target"
+            :data="item"
+          />
         </div>
       </div>
     </VueResizable>

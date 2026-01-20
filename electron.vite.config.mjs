@@ -1,6 +1,6 @@
 import { resolve } from 'path'
 import path from 'path'
-import { defineConfig } from 'electron-vite'
+import { defineConfig, bytecodePlugin, externalizeDepsPlugin } from 'electron-vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 import vueDevTools from 'vite-plugin-vue-devtools'
@@ -8,8 +8,12 @@ import vitePluginSvgsIcons from 'vite-plugin-svgs-icons'
 import Components from 'unplugin-vue-components/vite'
 import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
 export default defineConfig({
-  main: {},
-  preload: {},
+  main: {
+    plugins: [bytecodePlugin(), externalizeDepsPlugin()]
+  },
+  preload: {
+    plugins: [bytecodePlugin(), externalizeDepsPlugin()]
+  },
   renderer: {
     resolve: {
       alias: {

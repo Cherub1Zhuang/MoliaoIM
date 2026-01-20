@@ -3,7 +3,8 @@
     "yesterday": "Yesterday"
   },
   "search": "Search",
-  "group": "Group",
+  "group": "My Groups",
+  "friend": "My Friends",
   "send_btn": "Send",
   "login": {
     "welcome_back": "Welcome Back",
