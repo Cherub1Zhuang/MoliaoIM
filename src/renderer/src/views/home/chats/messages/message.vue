@@ -1,7 +1,7 @@
 <template>
-  <div v-if="msgType === MessageTypes.HELLO" class="notify-msg">{{ '[以上是打招呼内容]' }}</div>
+  <div v-if="msgType === MessageTypes.HELLO" class="notify-msg">{{ '以上是打招呼内容' }}</div>
   <div v-else-if="msgType === MessageTypes.YOUAREFRIENDS" class="notify-msg">
-    {{ '[你们已经是好友了，可以开始聊天了]' }}
+    {{ '你们已经是好友了，可以开始聊天了' }}
   </div>
   <removefromgroupMsg v-else-if="msgType === MessageTypes.REMOVEFROMGROUP" :data="props.message" />
   <invitetogroupMsg v-else-if="msgType === MessageTypes.INVITETOGROUP" :data="props.message" />
@@ -28,7 +28,7 @@
               {{ `${extra.readUsers?.length || 0}人已读` }}
             </a-menu-item>
             <a-menu-item v-if="canRecall" key="1" @click="recallMessage">撤回</a-menu-item>
-            <!-- <a-menu-item key="2">转发</a-menu-item>-->
+            <a-menu-item key="2" @click="$emit('forward-msg')">转发</a-menu-item>
             <a-menu-item key="3" @click="deleteMessage">删除</a-menu-item>
             <a-menu-item key="4" @click="copyMessage">复制</a-menu-item>
             <a-menu-item v-if="canEdit" key="5" @click="$emit('edit-msg')">编辑</a-menu-item>

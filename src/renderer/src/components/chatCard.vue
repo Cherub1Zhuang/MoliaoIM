@@ -120,6 +120,10 @@ const lastMsgContent = computed(() => {
       return '[语音]'
     case MessageTypes.FILE:
       return '[文件]'
+    case MessageTypes.HELLO:
+      return '以上是打招呼内容'
+    case MessageTypes.YOUAREFRIENDS:
+      return '你们已经是好友了，可以开始聊天了'
     case MessageTypes.Name_Card:
       return '[名片]'
     case MessageTypes.Multiple:

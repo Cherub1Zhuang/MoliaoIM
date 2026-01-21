@@ -2,13 +2,13 @@
   <div
     class="max-w-full"
     :class="[
-      is_myself ? 'bg-green-400' : 'bg-white',
+      is_myself ? 'bg-transparent' : 'bg-transparent',
       'px-2 py-1 rounded-md whitespace-normal break-all'
     ]"
   >
     <!-- {{ content }} -->
     <div
-      class="grid gap-1"
+      class="grid gap-1 relative"
       :class="cols === 1 ? 'grid-cols-1' : cols === 2 ? 'grid-cols-2' : 'grid-cols-3'"
     >
       <div v-for="img in imgs" :key="img" class="w-[120px] h-[120px] overflow-hidden">
@@ -30,9 +30,17 @@
           class="w-[120px] h-[120px] object-cover no-drag"
         />
       </div>
+      <ifread
+        class="absolute bottom-1 right-1"
+        v-if="is_myself && !text"
+        :extra="props.data.payload.extra"
+      />
     </div>
-    <div class="break-all whitespace-normal">
-      {{ text }}<ifread class="" v-if="is_myself" :extra="props.data.payload.extra" />
+    <div v-if="text" class="flex items-end justify-between">
+      <div class="break-all whitespace-normal text-left">
+        {{ text }}
+      </div>
+      <ifread class="" v-if="is_myself" :extra="props.data.payload.extra" />
     </div>
   </div>
 </template>

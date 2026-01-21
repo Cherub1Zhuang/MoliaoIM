@@ -253,11 +253,13 @@ const getMediaType = (file) => {
 const handleUploadComplete = async (files) => {
   files.map(async (f) => {
     const mediaType = getMediaType(f)
-
+    const localPath = window.api.getRealPath(f)
+    console.log('本地文件路径:', localPath)
     let placeholder = {
       type: mediaType,
       percent: 0,
       status: 'uploading',
+      localPath: localPath || '',
       id: nanoid()
     }
 

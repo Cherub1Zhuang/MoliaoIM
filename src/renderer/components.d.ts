@@ -12,9 +12,11 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AButton: typeof import('ant-design-vue/es')['Button']
+    AConfigProvider: typeof import('ant-design-vue/es')['ConfigProvider']
     ADropdown: typeof import('ant-design-vue/es')['Dropdown']
     AImage: typeof import('ant-design-vue/es')['Image']
     AInput: typeof import('ant-design-vue/es')['Input']
+    AInputSearch: typeof import('ant-design-vue/es')['InputSearch']
     AMenu: typeof import('ant-design-vue/es')['Menu']
     AMenuItem: typeof import('ant-design-vue/es')['MenuItem']
     AModal: typeof import('ant-design-vue/es')['Modal']
@@ -23,6 +25,7 @@ declare module 'vue' {
     Avatar: typeof import('./src/components/avatar.vue')['default']
     ChatCard: typeof import('./src/components/chatCard.vue')['default']
     ContactCard: typeof import('./src/components/contactCard.vue')['default']
+    Forward: typeof import('./src/components/dialogs/forward.vue')['default']
     Mmc: typeof import('./src/components/mmc.vue')['default']
     Requestaddfriend: typeof import('./src/components/dialogs/requestaddfriend.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

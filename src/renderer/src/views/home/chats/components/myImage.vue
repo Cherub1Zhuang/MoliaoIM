@@ -18,11 +18,11 @@
         />
       </div>
     </teleport> -->
-    <a-image :width="120" :height="120" :src="props.data.remotePath" class="pointer-events-auto" />
+    <a-image :width="120" :height="120" :src="imageUrl" class="pointer-events-auto" />
   </div>
 </template>
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 const props = defineProps({
   data: {
     type: Object,
@@ -30,6 +30,28 @@ const props = defineProps({
   }
 })
 const open = ref(false)
+const remotePath = computed(() => {
+  return props.data.remotePath || ''
+})
+const localPath = computed(() => {
+  return props.data.localPath || ''
+})
+const cacheUrl = ref('')
+const imageUrl = computed(() => {
+  return cacheUrl.value || remotePath.value
+})
+const getCacheUrl = async () => {
+  let exists = false
+  if (localPath.value) {
+    exists = await window.electron.ipcRenderer.invoke('check-local-file-exists', localPath.value)
+  }
+  if (exists) {
+    cacheUrl.value = 'file://' + localPath.value
+  } else {
+    const url = await window.electron.ipcRenderer.invoke('get-cache-url', remotePath.value)
+    cacheUrl.value = url
+  }
+}
 </script>
 
 <style scoped></style>

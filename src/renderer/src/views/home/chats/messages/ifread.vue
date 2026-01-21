@@ -1,6 +1,6 @@
 <template>
   <span class="inline-block">
-    <Icon v-if="json_extra?.read" name="read" size="10" />
+    <Icon v-if="json_extra?.read || json_extra?.readUsers?.length > 0" name="read" size="10" />
     <Icon v-else name="unread" size="10" />
   </span>
 </template>

@@ -26,6 +26,7 @@
       @update-online-status="getOnlineStatus"
       @edit-msg="handleEditMsg"
       @quote-msg="handleQuoteMsg"
+      @forward-msg="openForwardDialog"
     />
     <div
       class="w-full relative border-t border-gray-200"
@@ -48,6 +49,7 @@
         @mouseup="onMouseUp"
       ></div>
     </div>
+    <forward v-model:open="forward_show" />
   </div>
 </template>
 <script setup>
@@ -56,6 +58,7 @@ import messages from './messages/index.vue'
 import { ref, onMounted, computed, onUnmounted, toRaw, provide } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '../../../stores/user'
+import forward from '@renderer/components/dialogs/forward.vue'
 import api from '../../../api'
 const showMulSelect = ref(false)
 provide('showMulSelect', showMulSelect)
@@ -121,6 +124,11 @@ const handleEditMsg = (msg) => {
 }
 const handleQuoteMsg = (msg) => {
   sendInputRef.value.quoteMsg(msg)
+}
+// 转发
+const forward_show = ref(false)
+const openForwardDialog = () => {
+  forward_show.value = true
 }
 onMounted(() => {
   st.get_current_conv_msgs({

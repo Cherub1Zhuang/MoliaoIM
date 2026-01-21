@@ -1,13 +1,27 @@
-import { app, shell, BrowserWindow, ipcMain, dialog, session } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog, session, protocol } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { machineIdSync } from 'node-machine-id'
 import * as m from './mqtt_utils'
+import fs from 'fs'
 // import DB from './db'
 import DB from './new_db'
 import path from 'path'
-
+import * as mediaCache from './media_cache'
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'cache',
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      corsEnabled: true,
+      stream: true // ✅ 视频流很重要
+    }
+  }
+])
+mediaCache.ensureMediaCacheDirExists()
 let mainWindow = null
 let db = null
 const initDBForUser = (userId) => {
@@ -28,7 +42,8 @@ function createWindow() {
     ...(process.platform === 'linux' ? { icon } : { icon }),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false,
+      webSecurity: false
     }
   })
 
@@ -131,10 +146,17 @@ const registerIpc = () => {
     })
     mainWindow.webContents.downloadURL(data.url)
   })
+  ipcMain.handle('get-cache-url', async (_, url) => {
+    return await mediaCache.cacheRemoteFile(url)
+  })
+  ipcMain.handle('check-local-file-exists', (_, filePath) => {
+    return fs.existsSync(filePath)
+  })
 }
 
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.weizhi.avconverter')
+  mediaCache.registerMediaCacheProtocol()
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
@@ -142,6 +164,7 @@ app.whenReady().then(() => {
 
   createWindow()
   registerIpc()
+  mediaCache.cleanCache()
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

@@ -122,7 +122,7 @@ class DB {
     const userDataPath = app.getPath('userData')
     const dbPath = path.join(userDataPath, `db_${userId}.sqlite3`)
     this.dbPath = dbPath
-    this.version = 1
+    this.version = 2
     this.init()
   }
   init() {

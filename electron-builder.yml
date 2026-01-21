@@ -10,6 +10,10 @@ files:
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
 asarUnpack:
   - resources/**
+extraResources:
+  - from: resources/wfcmessage_community.proto
+    to: .
+
 win:
   executableName: 云语
   icon: build/icon.ico

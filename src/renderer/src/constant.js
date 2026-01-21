@@ -18,6 +18,7 @@ export const MessageTypes = {
   Not_Delivered: 16, // 未送达
   Ptt_Voice: 23, // PTT语音
   Multiple: 30, //多图文
+  New_Register: 40, // 新用户注册
   Enter_Channel_Chat: 71, // 进入频道聊天
   Leave_Channel_Chat: 72, // 离开频道聊天
   Recall: 80, // 撤回

@@ -5,7 +5,13 @@
         {{ formatWeChatTime(msg.timestamp) }}
       </div>
       <div class="flex items-start gap-2">
-        <message class="flex-1" :message="msg" @edit-msg="$emit('edit-msg', msg)" @quote-msg="$emit('quote-msg', msg)" />
+        <message
+          class="flex-1"
+          :message="msg"
+          @edit-msg="$emit('edit-msg', msg)"
+          @quote-msg="$emit('quote-msg', msg)"
+          @forward-msg="$emit('forward-msg', msg)"
+        />
         <div
           class="pt-2"
           v-if="
@@ -35,7 +41,7 @@
   </div>
 </template>
 <script setup>
-import { ref, watch, nextTick, onMounted, onBeforeUnmount, provide,inject } from 'vue'
+import { ref, watch, nextTick, onMounted, onBeforeUnmount, provide, inject } from 'vue'
 import message from './message.vue'
 import { useUserStore } from '@renderer/stores/user'
 import { formatWeChatTime } from '@renderer/utils'

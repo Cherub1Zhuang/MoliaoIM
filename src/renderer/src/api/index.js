@@ -63,6 +63,9 @@ const send_voice_msg = (data) => {
 const send_quote_msg = (data) => {
   return instance.post('/messages/send_quote', data)
 }
+const get_msg_detail = (messageUid) => {
+  return instance.post('/messages/detail', { messageUid })
+}
 // upload
 const upload_media = (media_type, file, handleProgress = null) => {
   const formData = new FormData()
@@ -138,7 +141,8 @@ export default {
     send_file_msg,
     delete_msg,
     send_voice_msg,
-    send_quote_msg
+    send_quote_msg,
+    get_msg_detail
   },
   upload: {
     upload_media,

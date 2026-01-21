@@ -21,11 +21,85 @@ const route = useRoute()
 
 const handleMqttMsg = (data) => {
   console.log('Received MQTT message:', data)
-  if (data.topic === 'MN') pullMsg()
+  if (data.topic === 'MN') {
+    if (data.decoded?.head) {
+      const messageUid = combineInt64(data.decoded.head.high, data.decoded.head.low)
+      api.msg.get_msg_detail(messageUid).then((res) => {
+        console.log('Message details:', res.result)
+        // 处理消息入库等逻辑
+        // st.update_current_conv_msgs([msg])
+        if (res.result) handleMsgs([res.result])
+      })
+      return
+    }
+    pullMsg()
+  }
   if (data.topic === 'FN' || data.topic === 'FRN') {
     st.get_friend_requests()
     pullMsg()
   }
+}
+function combineInt64(high, low) {
+  // 将 low 转换为无符号 32 位整数
+  // 使用 >>> 0 可以将负数转换为对应的无符号 32 位整数
+  const lowUnsigned = low >>> 0
+
+  // 将 high 左移 32 位，然后与 low 进行或运算
+  // 使用 BigInt 确保精度
+  const highBigInt = BigInt(high)
+  const lowBigInt = BigInt(lowUnsigned)
+
+  // 组合：high << 32 | low
+  const result = (highBigInt << 32n) | lowBigInt
+
+  return result.toString()
+}
+const handleMsgs = (messages) => {
+  const msgs = messages.map((msg) => {
+    const conv_type = msg.conv.type
+    if (conv_type === 0) {
+      msg.conv.target = msg.sender === st.userinfo.userId ? msg.conv.target : msg.sender
+      msg.payload.content =
+        msg.payload.content !== '' ? msg.payload.content : msg.payload.searchableContent
+    }
+
+    if (
+      msg.conv.target === route.params.target &&
+      conv_type === Number(route.query.conversationType) &&
+      msg.conv.line === Number(route.query.line || 0)
+    ) {
+      console.log('更新当前会话消息列表', msg)
+      st.update_current_conv_msgs([msg])
+      msg.isRead = true
+    }
+    return msg
+  })
+  const hasNewConv = msgs.some((msg) => {
+    return !st.conversations.find(
+      (c) =>
+        c.conversationType === msg.conv.type &&
+        c.target === msg.conv.target &&
+        c.line === msg.conv.line
+    )
+  })
+
+  // 消息入库
+  window.electron.ipcRenderer
+    .invoke('db-operation', 'upsert-messages', {
+      messages: msgs
+    })
+    .then(async (res) => {
+      if (hasNewConv) {
+        console.log('New conversation detected, refreshing conversation list')
+        st.get_conversation_list()
+      } else {
+        await window.electron.ipcRenderer
+          .invoke('db-operation', 'get-conversations')
+          .then((final_convs) => {
+            st.conversations = final_convs
+          })
+      }
+    })
 }
 const pullMsg = () => {
   api.msg
